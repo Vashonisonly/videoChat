@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import android.util.Log;
 
 import com.example.wxvideotalk1030.R;
@@ -24,10 +25,6 @@ public class WxCameraRender implements WLEGLSurfaceView.WlGLRender,SurfaceTextur
             1f,1f
     };
 
-    @Override
-    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-
-    }
 
     private FloatBuffer vertexBuffer;
 
@@ -46,8 +43,15 @@ public class WxCameraRender implements WLEGLSurfaceView.WlGLRender,SurfaceTextur
     private int fboTextureId;
     private int cameraTextureId;
 
+    //
+    private int umatrix;
+    private float[] matrix = new float[16];
+
     private SurfaceTexture surfaceTexture;
     private OnSurfaceCreateListener onSurfaceCreateListener;
+
+    private int screenWidth, screenHeigth;
+    private int width, heigth;
 
     public WxCameraRender(Context contex){
         this.contex = contex;
@@ -139,15 +143,52 @@ public class WxCameraRender implements WLEGLSurfaceView.WlGLRender,SurfaceTextur
         if(onSurfaceCreateListener != null){
             onSurfaceCreateListener.onSurfaceCreate(surfaceTexture);
         }
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,0);
+    }
+
+    public void resetMatrix(){
+        Matrix.setIdentityM(matrix, 0);
+    }
+
+    public void setAngle(float angle, float x, float y, float z){
+        Matrix.rotateM(matrix, 0, angle, x, y, z);
     }
 
     @Override
     public void onSurfaceChanged(int width, int height) {
-
+        this.width = width;
+        this.heigth = height;
     }
 
     @Override
     public void onDrawFrame() {
+        //???
+        surfaceTexture.updateTexImage();
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glClearColor(1f,0f,0f,1f);
+
+        GLES20.glUseProgram(program);
+
+        GLES20.glViewport(0,0,screenWidth,screenHeigth);
+        GLES20.glUniformMatrix4fv(umatrix,1,false,matrix,0);
+
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER,fboId);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,vboId);
+
+        GLES20.glEnableVertexAttribArray(vPosition);
+        GLES20.glVertexAttribPointer(vPosition,2,GLES20.GL_FLOAT,false,8,0);
+        GLES20.glEnableVertexAttribArray(fPosition);
+        GLES20.glVertexAttribPointer(fPosition,2,GLES20.GL_FLOAT,false,8,vertexData.length*4);
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,0);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,0);
+
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER,0);
+    }
+
+    @Override
+    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
 
     }
 
