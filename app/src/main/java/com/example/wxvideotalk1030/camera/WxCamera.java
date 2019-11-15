@@ -29,6 +29,7 @@ public class WxCamera {
 
     public void initCamera(SurfaceTexture surfaceTexture, int cameraId){
         this.surfaceTexture = surfaceTexture;
+        setCameraParm(cameraId);
 
     }
 

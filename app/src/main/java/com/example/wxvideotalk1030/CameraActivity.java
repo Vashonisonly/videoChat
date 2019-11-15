@@ -2,6 +2,7 @@ package com.example.wxvideotalk1030;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.wxvideotalk1030.camera.WxCameraView;
 
 public class CameraActivity extends AppCompatActivity {
+    private static final String TAG = "CameraActivity";
 
     private WxCameraView wxCameraView;
 
@@ -21,11 +23,13 @@ public class CameraActivity extends AppCompatActivity {
 
     @Override
     public void onConfigurationChanged(Configuration newconfig){
-        super.onDestroy();
-
+        Log.d(TAG,"configChanged");
+        super.onConfigurationChanged(newconfig);
+        wxCameraView.previewAngle(this);
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        wxCameraView.onDestory();
     }
 }

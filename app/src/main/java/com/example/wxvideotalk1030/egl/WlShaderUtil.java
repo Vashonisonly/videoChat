@@ -1,6 +1,7 @@
 package com.example.wxvideotalk1030.egl;
 
 import android.content.Context;
+import android.nfc.Tag;
 import android.opengl.GLES20;
 import android.util.Log;
 
@@ -9,6 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class WlShaderUtil {
+
+    private static final String TAG = "WxShaderUtil";
 
     public static String getRawResource(Context context, int rawId)
     {
@@ -59,6 +62,7 @@ public class WlShaderUtil {
     {
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource);
         int fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSoruce);
+        Log.d(TAG,"vertex shader is " + vertexShader + "fragmentShader is " + fragmentShader);
 
         if(vertexShader != 0 && fragmentShader != 0)
         {

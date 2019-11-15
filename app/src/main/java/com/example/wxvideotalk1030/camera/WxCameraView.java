@@ -1,6 +1,7 @@
 package com.example.wxvideotalk1030.camera;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -24,7 +25,7 @@ public class WxCameraView extends WLEGLSurfaceView {
     }
 
     public WxCameraView(Context context, AttributeSet attrs) {
-        this(context, null,0);
+        this(context, attrs,0);
     }
 
     public WxCameraView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -33,7 +34,19 @@ public class WxCameraView extends WLEGLSurfaceView {
         wxCamera = new WxCamera(context);
         setRender(wxCameraRender);
         previewAngle(context);
-        wxCameraRender
+        wxCameraRender.setOnSurfaceCreateListener(new WxCameraRender.OnSurfaceCreateListener() {
+            @Override
+            public void onSurfaceCreate(SurfaceTexture surfaceTexture, int tid) {
+                wxCamera.initCamera(surfaceTexture,cameraId);
+                textureId = tid;
+            }
+
+        });
+    }
+    public void onDestory(){
+        if(wxCamera != null){
+            wxCamera.stopPreview();
+        }
     }
 
     public void previewAngle(Context context){
