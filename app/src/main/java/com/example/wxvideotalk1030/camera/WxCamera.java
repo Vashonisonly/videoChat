@@ -30,11 +30,16 @@ public class WxCamera {
     public void initCamera(SurfaceTexture surfaceTexture, int cameraId){
         this.surfaceTexture = surfaceTexture;
         setCameraParm(cameraId);
+    }
+    public void turnCamera(int cameraId){
+        stopPreview();
+        setCameraParm(cameraId);
 
     }
 
     public void setCameraParm(int cameraId){
         try{
+            // FMOD 前置摄像头检查
             camera = Camera.open(cameraId);
             camera.setPreviewTexture(surfaceTexture);
             Camera.Parameters parameters = camera.getParameters();

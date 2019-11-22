@@ -9,14 +9,14 @@ import android.util.Log;
 
 import com.example.wxvideotalk1030.R;
 import com.example.wxvideotalk1030.Utils.DisPlayerUtil;
-import com.example.wxvideotalk1030.egl.WLEGLSurfaceView;
-import com.example.wxvideotalk1030.egl.WlShaderUtil;
+import com.example.wxvideotalk1030.egl.WXEGLSurfaceView;
+import com.example.wxvideotalk1030.egl.WxShaderUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-public class WxCameraRender implements WLEGLSurfaceView.WlGLRender,SurfaceTexture.OnFrameAvailableListener {
+public class WxCameraRender implements WXEGLSurfaceView.WxGLRender,SurfaceTexture.OnFrameAvailableListener {
     private static final String TAG = "WxCameraRender";
     private Context contex;
 
@@ -81,10 +81,10 @@ public class WxCameraRender implements WLEGLSurfaceView.WlGLRender,SurfaceTextur
     public void onSurfaceCreated() {
 
         wxCameraFboRender.onCreate();
-        String vertexSource = WlShaderUtil.getRawResource(contex, R.raw.vertex_shader);
-        String fragmentSource = WlShaderUtil.getRawResource(contex,R.raw.fragment_shader);
+        String vertexSource = WxShaderUtil.getRawResource(contex, R.raw.vertex_shader);
+        String fragmentSource = WxShaderUtil.getRawResource(contex,R.raw.fragment_shader);
 
-        program = WlShaderUtil.createProgram(vertexSource,fragmentSource);
+        program = WxShaderUtil.createProgram(vertexSource,fragmentSource);
         Log.d(TAG,"surfaceCreated, program is " + program);
         vPosition = GLES20.glGetAttribLocation(program, "v_Position");
         fPosition = GLES20.glGetAttribLocation(program, "f_Position");

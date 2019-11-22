@@ -8,9 +8,9 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
 
-import com.example.wxvideotalk1030.egl.WLEGLSurfaceView;
+import com.example.wxvideotalk1030.egl.WXEGLSurfaceView;
 
-public class WxCameraView extends WLEGLSurfaceView {
+public class WxCameraView extends WXEGLSurfaceView {
 
     private static final String TAG = "WxCameraView";
 
@@ -49,6 +49,11 @@ public class WxCameraView extends WLEGLSurfaceView {
         }
     }
 
+    public void turnCamera(){
+        cameraId = 1 - cameraId;
+        wxCamera.turnCamera(cameraId);
+        previewAngle(getContext());
+    }
     public void previewAngle(Context context){
         int angle = ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
         wxCameraRender.resetMatrix();

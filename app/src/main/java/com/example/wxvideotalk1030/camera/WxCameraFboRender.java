@@ -4,7 +4,7 @@ import android.content.Context;
 import android.opengl.GLES20;
 
 import com.example.wxvideotalk1030.R;
-import com.example.wxvideotalk1030.egl.WlShaderUtil;
+import com.example.wxvideotalk1030.egl.WxShaderUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -53,10 +53,10 @@ public class WxCameraFboRender {
     }
 
     public void onCreate(){
-        String vertexSource = WlShaderUtil.getRawResource(context, R.raw.vertex_shader_screen);
-        String fragmentSource = WlShaderUtil.getRawResource(context,R.raw.fragment_shader_screen);
+        String vertexSource = WxShaderUtil.getRawResource(context, R.raw.vertex_shader_screen);
+        String fragmentSource = WxShaderUtil.getRawResource(context,R.raw.fragment_shader_screen);
 
-        program = WlShaderUtil.createProgram(vertexSource,fragmentSource);
+        program = WxShaderUtil.createProgram(vertexSource,fragmentSource);
 
         vPosition = GLES20.glGetAttribLocation(program,"v_Position");
         fPosition = GLES20.glGetAttribLocation(program,"f_Position");

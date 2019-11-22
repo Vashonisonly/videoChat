@@ -17,8 +17,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         initMediaCodecPlayer();
+        setContentView(R.layout.activity_main);
     }
 
     /**
@@ -35,16 +35,21 @@ public class MainActivity extends AppCompatActivity {
     public void initMediaCodecPlayer(){
         Log.i(TAG,"---------------------");
         //动态权限申请
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-            //申请权限，REQUEST_TAKE_PHOTO_PERMISSION是自定义的常量
+        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA},2);
+                    new String[]{Manifest.permission.CAMERA},1);
+        }
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},2);
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
+        }
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},2);
-            //Log.e(TAG,"can not find permission for open camera!");
-            //return;
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
+        }
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.RECORD_AUDIO},1);
         }
         Log.d(TAG,"---------------------");
     }

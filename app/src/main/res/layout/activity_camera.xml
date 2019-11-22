@@ -1,11 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <com.example.wxvideotalk1030.camera.WxCameraView
         android:id="@+id/cameraview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_width="480dp"
+        android:layout_height="640dp"/>
 
-</LinearLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/turnCamera"
+        android:text="切换"
+        android:layout_alignParentRight="true"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/record"
+        android:text="录制"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true" />
+
+
+</RelativeLayout>
