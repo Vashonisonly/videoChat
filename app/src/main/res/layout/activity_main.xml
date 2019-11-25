@@ -16,5 +16,11 @@
         android:text="视频编码录制"
         android:onClick="videorecord"/>
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="直播观看"
+        android:onClick="startLive"/>
+
 
 </LinearLayout>

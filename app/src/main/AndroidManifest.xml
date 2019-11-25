@@ -24,6 +24,9 @@
         <activity android:name=".CameraActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:theme="@style/AppThemeFullScreen"/>
+        <activity android:name=".LivePushActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:theme="@style/AppThemeFullScreen"/>
 
     </application>
 

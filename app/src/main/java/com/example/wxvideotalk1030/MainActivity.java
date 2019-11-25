@@ -25,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
-    public native String stringFromJNI();
 
     public void cameraPreview(View view){
         Intent intent = new Intent(this, CameraActivity.class);
@@ -52,5 +51,10 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.RECORD_AUDIO},1);
         }
         Log.d(TAG,"---------------------");
+    }
+
+    public void startLive(View view) {
+        Intent intent = new Intent(this,LivePushActivity.class);
+        startActivity(intent);
     }
 }
