@@ -13,6 +13,7 @@ add_library( # Sets the name of the library.
         src/main/cpp/WxPush.cpp
         src/main/cpp/WxQueue.cpp
         src/main/cpp/RtmpPush.cpp
+        src/main/cpp/WxCallJava.cpp
 
         # include src
         src/main/cpp/librtmp/amf.c

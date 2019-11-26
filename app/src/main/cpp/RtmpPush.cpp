@@ -4,9 +4,10 @@
 
 #include "RtmpPush.h"
 
-RtmpPush::RtmpPush(const char *url) {
+RtmpPush::RtmpPush(const char *url,WxCallJava *wxCallJava) {
     this->url = static_cast<char *>(malloc((size_t)(512)));
     strcpy(this->url,url);
+    this->wxCallJava = wxCallJava;
     this->queue = new WxQueue();
 
 }
@@ -31,18 +32,21 @@ void *callBackPush(void *data){
 
     LOGD("url is: %s",rtmpPush->url);
     if(!RTMP_Connect(rtmpPush->rtmp, NULL)){
-        // Log
+        // LOG
         LOGE("RtmpPush connect to the server fail");
+        rtmpPush->wxCallJava->onConnectFail("RtmpPush connect to the server fail");
         goto end;
     }
 
     if(!RTMP_ConnectStream(rtmpPush->rtmp, 0)){
-        //LOG
+        // LOG
         LOGE("RtmpPush connect to the server's stream fail");
+        rtmpPush->wxCallJava->onConnectFail("RtmpPush connect to the server's stream fail");
         goto end;
     }
+    rtmpPush->wxCallJava->onConnected();
 
-    LOGD("RtmpPush","连接成功，开始推流");
+    LOGD("RtmpPush，连接成功，开始推流");
 //    while (true){
 //
 //    }
@@ -56,5 +60,8 @@ void *callBackPush(void *data){
 }
 
 void RtmpPush::init() {
+    wxCallJava->onConnecting(WX_THREAD_MAIN);
     pthread_create(&pushThread,NULL,callBackPush,this);
 }
+
+

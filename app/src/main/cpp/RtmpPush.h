@@ -9,6 +9,7 @@
 #include <string>
 #include "WxQueue.h"
 #include "pthread.h"
+#include "WxCallJava.h"
 
 extern "C"{
 #include "librtmp/rtmp.h"
@@ -21,8 +22,10 @@ public:
     char *url = nullptr;
     WxQueue *queue = nullptr;
     pthread_t pushThread;
+    WxCallJava *wxCallJava = nullptr;
+
 public:
-    RtmpPush(const char *url);
+    RtmpPush(const char *url, WxCallJava *wxCallJava1);
     ~RtmpPush();
 
     void init();
