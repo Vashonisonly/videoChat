@@ -2,6 +2,7 @@ package com.example.wxvideotalk1030.egl;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -12,6 +13,7 @@ import javax.microedition.khronos.egl.EGLContext;
 
 public abstract class WXEGLSurfaceView extends SurfaceView implements SurfaceHolder.Callback{
 
+    private static final String TAG = "WXEGLSurfaceView";
 
     private Surface surface;
     private EGLContext eglContext;
@@ -174,14 +176,11 @@ public abstract class WXEGLSurfaceView extends SurfaceView implements SurfaceHol
                     }
                 }
 
-
                 onCreate();
                 onChange(width, height);
                 onDraw();
 
                 isStart = true;
-
-
             }
 
 
@@ -207,11 +206,14 @@ public abstract class WXEGLSurfaceView extends SurfaceView implements SurfaceHol
 
         private void onDraw()
         {
+            //Log.d(TAG,"ondraw begin");
             if(wxeglSurfaceViewWeakReference.get().wxGLRender != null && eglHelper != null)
             {
+                //Log.d(TAG,"ondraw begin1");
                 wxeglSurfaceViewWeakReference.get().wxGLRender.onDrawFrame();
                 if(!isStart)
                 {
+                    //Log.d(TAG,"ondraw begin2");
                     wxeglSurfaceViewWeakReference.get().wxGLRender.onDrawFrame();
                 }
                 eglHelper.swapBuffers();

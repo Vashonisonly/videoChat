@@ -45,10 +45,11 @@ public class CameraActivity extends AppCompatActivity {
                         @Override
                         public void onMediaTime(int times) {
                             Log.d(TAG,"time is "+ times);
+                            //btnRecord.setText(times);
                         }
                     });
                     wxMediaEncodec.startRecord();
-                    btnRecord.setText(Environment.getExternalStorageDirectory() + "/wxData/wxmediarecord.mp4");
+                    btnRecord.setText(Environment.getExternalStorageDirectory() + "/wxmediarecord.mp4");
                 }else {
                     wxMediaEncodec.stopRecord();
                     btnRecord.setText("录制");

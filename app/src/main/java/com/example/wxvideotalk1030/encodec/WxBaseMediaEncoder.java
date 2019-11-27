@@ -125,22 +125,17 @@ public abstract class WxBaseMediaEncoder {
             @Override
             public void readByte(byte[] audioData, int readSize) {
                 //Log.d(TAG,"audio put data[10]" + audioData[10]);
-                int alreadyRead = 0;
-                while (alreadyRead < readSize){
                     if(audioEncodecThread != null && !audioEncodecThread.isExit && audioData != null && readSize > 0){
                         int inputBufferIndex = audioEncodec.dequeueInputBuffer(0);
                         if(inputBufferIndex >= 0){
                             ByteBuffer byteBuffer = audioEncodec.getInputBuffer(inputBufferIndex);
                             byteBuffer.clear();
-                            int length = readSize - alreadyRead > byteBuffer.capacity() ? byteBuffer.capacity() : readSize - alreadyRead;
-                            byteBuffer.put(audioData,alreadyRead,length);
-                            long pts = getAudioPts(readSize,44100);
-                            audioEncodec.queueInputBuffer(inputBufferIndex,0,length,pts,0);
-                            alreadyRead += byteBuffer.capacity();
+                            byteBuffer.put(audioData);
+                            long pts = getAudioPts(readSize,sampleRate);
+                            audioEncodec.queueInputBuffer(inputBufferIndex,0,readSize,pts,0);
                         }
                     }
                 }
-            }
         });
     }
 
@@ -196,8 +191,8 @@ public abstract class WxBaseMediaEncoder {
             audioFormat.setString(MediaFormat.KEY_MIME,mimeType);
             audioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE,MediaCodecInfo.CodecProfileLevel.AACObjectLC);// for waht?
             audioFormat.setInteger(MediaFormat.KEY_BIT_RATE,sampleRate);
-            // ?
-            audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE,4096);
+            // 可以计算得出更好，目前写死
+            audioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE,15*1024);
             audioEncodec = MediaCodec.createEncoderByType(mimeType);
             audioEncodec.configure(audioFormat,null,null,MediaCodec.CONFIGURE_FLAG_ENCODE);
         }catch (IOException e){
@@ -254,6 +249,7 @@ public abstract class WxBaseMediaEncoder {
                         throw new RuntimeException("unknow Render Mode");
                     }
                 }
+                //Log.d(TAG,"encodec loop");
                 onCreate();
                 onChange(encoder.get().width,encoder.get().heigth);
                 onDraw();
@@ -273,9 +269,12 @@ public abstract class WxBaseMediaEncoder {
             }
         }
         private void onDraw(){
+            //Log.d(TAG,"encodec onDraw");
             if(encoder.get().wxGlRender != null && eglHelper != null){
+                //Log.d(TAG,"encodec onDraw1");
                 encoder.get().wxGlRender.onDrawFrame();
                 if(!isStart){
+                    //Log.d(TAG,"encodec onDraw2");
                     encoder.get().wxGlRender.onDrawFrame();
                 }
                 eglHelper.swapBuffers();
@@ -348,7 +347,7 @@ public abstract class WxBaseMediaEncoder {
                     break;
                 }
 
-                Log.d(TAG,"videoBufferInfo is " + videoBufferInfo);
+                //Log.d(TAG,"videoBufferInfo is " + videoBufferInfo);
                 int outputBufferIndex = videoEncodec.dequeueOutputBuffer(videoBufferInfo,0);
                 /*try{
                     currentThread().sleep(1000);
@@ -378,7 +377,7 @@ public abstract class WxBaseMediaEncoder {
                             videoBufferInfo.presentationTimeUs -= pts;
                             mediaMuxer.writeSampleData(videoTrackIndex, outputBuffer, videoBufferInfo);
                             if(encoder.get().onMediaInfoListener != null){
-                                encoder.get().onMediaInfoListener.onMediaTime((int)(videoBufferInfo.presentationTimeUs/1000000));
+                                encoder.get().onMediaInfoListener.onMediaTime((int)(videoBufferInfo.presentationTimeUs/1000));
                             }
                         }
                         videoEncodec.releaseOutputBuffer(outputBufferIndex,false);
@@ -454,6 +453,9 @@ public abstract class WxBaseMediaEncoder {
                             }
                             audioBufferInfo.presentationTimeUs = audioBufferInfo.presentationTimeUs - pts;
                             mediaMuxer.writeSampleData(audioTrackIndex,outputBuffer,audioBufferInfo);
+                            if(encoder.get().onMediaInfoListener != null){
+                                encoder.get().onMediaInfoListener.onMediaTime((int)(audioBufferInfo.presentationTimeUs/1000));
+                            }
                         }
                         audioEncodec.releaseOutputBuffer(outputBufferIndex,false);
                         outputBufferIndex = audioEncodec.dequeueOutputBuffer(audioBufferInfo, 0);
