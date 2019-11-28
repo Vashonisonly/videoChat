@@ -1,10 +1,12 @@
 package com.example.wxvideotalk1030.encodec;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Surface;
 
@@ -12,6 +14,8 @@ import com.example.wxvideotalk1030.Audio.WxBaseAudioRecord;
 import com.example.wxvideotalk1030.egl.EglHelper;
 import com.example.wxvideotalk1030.egl.WXEGLSurfaceView;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
@@ -43,6 +47,7 @@ public abstract class WxBaseMediaEncoder {
     private boolean videoExit;
     private boolean audioExit;
     private boolean encodecStart;
+    private boolean muxerStart;
 
     private WxBaseAudioRecord wxBaseAudioRecord;
 
@@ -106,17 +111,6 @@ public abstract class WxBaseMediaEncoder {
         }
     }
 
-
-
-    public void putPCMData(byte[] buffer,int size){
-        if(audioEncodecThread != null && !audioEncodecThread.isExit && buffer != null && size > 0){
-            int inputBufferIndex = audioEncodec.dequeueInputBuffer(0);
-            if(inputBufferIndex >= 0){
-                // *
-            }
-        }
-    }
-
     // audio encodec 的音源输入在这里
     private void setupAudioRecordAndPutData(){
         wxBaseAudioRecord = new WxBaseAudioRecord();
@@ -139,10 +133,25 @@ public abstract class WxBaseMediaEncoder {
         });
     }
 
+    //tools
     private long getAudioPts(int size, int sampleRate){
         audioPts += (long)(1.0 * size/(sampleRate * 2 * 2) * 1000000.0);
         return audioPts;
     }
+    public static String byteToHex(byte[] data){
+        StringBuffer stringBuffer = new StringBuffer();
+        for(int i = 0; i< data.length; ++i){
+            String hex = Integer.toHexString(data[i]);
+            if(hex.length() == 1){
+                stringBuffer.append("0" + hex);
+            }else {
+                stringBuffer.append(hex);
+            }
+            if(i>20) break;
+        }
+        return stringBuffer.toString();
+    }
+
     public void initEncodec(EGLContext eglContext, String savePath, int width, int heigth,int sampleRate, int channelCount){
         this.width = width;
         this.heigth = heigth;
@@ -176,7 +185,7 @@ public abstract class WxBaseMediaEncoder {
             Log.d(TAG,"videoEncodec is "+ videoEncodec);
             surface = videoEncodec.createInputSurface();
         }catch (IOException e){
-            Log.d(TAG,"init VideoDecodec fail" + e.getMessage());
+            Log.d(TAG,"init VideoEncodec fail" + e.getMessage());
             videoEncodec = null;
             videoFormat = null;
             videoBufferInfo = null;
@@ -314,6 +323,9 @@ public abstract class WxBaseMediaEncoder {
 
         private int videoTrackIndex;
         private long pts;
+        private byte[] sps;
+        private byte[] pps;
+        private boolean keyFrame = false;
 
         public VideoEncodecThread(WeakReference<WxBaseMediaEncoder> encoder){
             this.encoder = encoder;
@@ -332,6 +344,7 @@ public abstract class WxBaseMediaEncoder {
             isExit = false;
 
             videoEncodec.start();
+
             while (true){
                 if(isExit){
                     videoEncodec.stop();
@@ -349,14 +362,22 @@ public abstract class WxBaseMediaEncoder {
 
                 //Log.d(TAG,"videoBufferInfo is " + videoBufferInfo);
                 int outputBufferIndex = videoEncodec.dequeueOutputBuffer(videoBufferInfo,0);
-                /*try{
-                    currentThread().sleep(1000);
-                }catch (InterruptedException e){
-                    Log.d(TAG,e.getMessage());
-                }*/
-                Log.d(TAG,"outputbufferIndex: " + outputBufferIndex);
+                // Log.d(TAG,"outputbufferIndex: " + outputBufferIndex);
+                keyFrame = false;
                 if(outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED){
                     videoFormat = videoEncodec.getOutputFormat();
+
+                    ByteBuffer spsb = videoFormat.getByteBuffer("csd-0");
+                    sps = new byte[spsb.remaining()];
+                    spsb.get(sps,0,sps.length);
+
+                    ByteBuffer ppsb = videoFormat.getByteBuffer("csd-1");
+                    pps = new byte[ppsb.remaining()];
+                    ppsb.get(pps,0,pps.length);
+
+                    Log.d(TAG,"get sps data is " + byteToHex(sps));
+                    Log.d(TAG,"get pps data is " + byteToHex(pps));
+
                     videoTrackIndex = mediaMuxer.addTrack(videoEncodec.getOutputFormat());
                     if(encoder.get().audioEncodecThread.audioTrackIndex != -1){
                         mediaMuxer.start();
@@ -366,7 +387,7 @@ public abstract class WxBaseMediaEncoder {
                     // without wait(-1)
                     while (outputBufferIndex >= 0){
                         if(encoder.get().encodecStart){
-                            ByteBuffer outputBuffer = videoEncodec.getOutputBuffer(outputBufferIndex);
+                            ByteBuffer outputBuffer = videoEncodec.getOutputBuffers()[outputBufferIndex];
                             outputBuffer.position(videoBufferInfo.offset);
                             outputBuffer.limit(videoBufferInfo.offset + videoBufferInfo.size);
 
@@ -375,10 +396,24 @@ public abstract class WxBaseMediaEncoder {
                             }
                             //???
                             videoBufferInfo.presentationTimeUs -= pts;
-                            mediaMuxer.writeSampleData(videoTrackIndex, outputBuffer, videoBufferInfo);
+
+                            byte[] data = new byte[outputBuffer.remaining()];
+                            outputBuffer.get(data,0,data.length);
+                            //Log.d(TAG,"get normal data is "+byteToHex(data));
+
+                            if(videoBufferInfo.flags == MediaCodec.BUFFER_FLAG_KEY_FRAME){
+                                keyFrame = true;
+                                Log.d(TAG,"get normal keyFrame data is "+byteToHex(data));
+                                if(encoder.get().onMediaInfoListener != null){
+                                    encoder.get().onMediaInfoListener.onSPSPPSInfo(sps,pps);
+                                }
+                            }
                             if(encoder.get().onMediaInfoListener != null){
+                                encoder.get().onMediaInfoListener.onVideoInfo(data,keyFrame);
+                                //Log.d(TAG,"keyFrame is "+keyFrame);
                                 encoder.get().onMediaInfoListener.onMediaTime((int)(videoBufferInfo.presentationTimeUs/1000));
                             }
+                            mediaMuxer.writeSampleData(videoTrackIndex, outputBuffer, videoBufferInfo);
                         }
                         videoEncodec.releaseOutputBuffer(outputBufferIndex,false);
                         outputBufferIndex = videoEncodec.dequeueOutputBuffer(videoBufferInfo,0);
@@ -472,5 +507,9 @@ public abstract class WxBaseMediaEncoder {
 
     public interface OnMediaInfoListener{
         void onMediaTime(int times);
+
+        void onSPSPPSInfo(byte[] sps, byte[] pps);
+
+        void onVideoInfo(byte[] data, boolean keyFrame);
     }
 }

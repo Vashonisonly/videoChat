@@ -38,5 +38,21 @@ public class WxPushVideo {
         }
     }
 
+    public void pushSPSPPS(byte[] sps, byte[] pps){
+        if( sps != null && pps != null){
+            pushSPSPPS(sps,sps.length,pps,pps.length);
+        }
+    }
+
+    public void pushVideoData(byte[] data, boolean iskeyFrame){
+        if(data != null){
+            pushVideoData(data,data.length, iskeyFrame);
+        }
+    }
+
     private native void initPush(String pushUrl);
+
+    private native void pushSPSPPS(byte[] sps, int sps_len, byte[] pps, int pps_len);
+
+    private native void pushVideoData(byte[] data, int dataLength, boolean isKeyFrame);
 }

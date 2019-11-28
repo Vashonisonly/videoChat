@@ -23,12 +23,16 @@ public:
     WxQueue *queue = nullptr;
     pthread_t pushThread;
     WxCallJava *wxCallJava = nullptr;
+    bool startPushing = false;
+    int startTime = 0;
 
 public:
     RtmpPush(const char *url, WxCallJava *wxCallJava1);
     ~RtmpPush();
 
     void init();
+    void pushSPSPPS(char *sps, int sps_length, char *pps, int pps_length);
+    void pushVideoData(char* data, int data_length, bool keyframe);
 };
 
 

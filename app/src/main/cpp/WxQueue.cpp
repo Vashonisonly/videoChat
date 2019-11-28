@@ -35,7 +35,7 @@ RTMPPacket *WxQueue::getRtmpPacket() {
     }
     pthread_mutex_unlock(&mutexPacket);
 
-    return nullptr;
+    return p;
 }
 
 void WxQueue::cleanQueue() {

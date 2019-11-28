@@ -1,6 +1,7 @@
 package com.example.wxvideotalk1030.camera;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.opengl.GLES20;
 
 import com.example.wxvideotalk1030.R;
@@ -17,7 +18,12 @@ public class WxCameraFboRender {
             -1f,-1f,
             1f,-1f,
             -1f,1f,
-            1f,1f
+            1f,1f,
+
+            0f,0f,
+            0f,0f,
+            0f,0f,
+            0f,0f
     };
     private FloatBuffer vertexBuffer;
 
@@ -35,9 +41,28 @@ public class WxCameraFboRender {
     private int sampler;
 
     private int vboId;
+    private Bitmap bitmap;
+    private int bitmapTextureId;
 
     public WxCameraFboRender(Context context){
         this.context = context;
+
+        bitmap = WxShaderUtil.createTextImage("目光所至",100,"#ff0000","#00000000",0);
+
+        float r = 1.0f * bitmap.getWidth() / bitmap.getHeight();
+        float w = r * 0.1f;
+
+        vertexData[8] = 0.8f -w;
+        vertexData[9] = -0.8f;
+
+        vertexData[10] = 0.8f;
+        vertexData[11] = -0.8f;
+
+        vertexData[12] = 0.8f -w;
+        vertexData[13] = -0.7f;
+
+        vertexData[14] = 0.8f;
+        vertexData[15] = -0.7f;
 
         vertexBuffer = ByteBuffer.allocateDirect(vertexData.length*4)
                 .order(ByteOrder.nativeOrder())
@@ -53,6 +78,10 @@ public class WxCameraFboRender {
     }
 
     public void onCreate(){
+        // ?什么作用
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA,GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
         String vertexSource = WxShaderUtil.getRawResource(context, R.raw.vertex_shader_screen);
         String fragmentSource = WxShaderUtil.getRawResource(context,R.raw.fragment_shader_screen);
 
@@ -72,7 +101,7 @@ public class WxCameraFboRender {
         GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER,vertexData.length*4,fragmentData.length*4,fragmentBuffer);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,0);
 
-
+        bitmapTextureId = WxShaderUtil.loadBitmapTexture(bitmap);
     }
 
     public void onChange(int width, int heogth){
@@ -85,6 +114,7 @@ public class WxCameraFboRender {
 
         GLES20.glUseProgram(program);
 
+        // bind fbo
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,textureId);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,vboId);
 
@@ -95,6 +125,18 @@ public class WxCameraFboRender {
         GLES20.glVertexAttribPointer(fPosition,2,GLES20.GL_FLOAT,false,8,vertexData.length*4);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);
+
+        // bind bitmap
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,bitmapTextureId);
+
+        GLES20.glEnableVertexAttribArray(vPosition);
+        GLES20.glVertexAttribPointer(vPosition,2,GLES20.GL_FLOAT,false,8,32);
+
+        GLES20.glEnableVertexAttribArray(fPosition);
+        GLES20.glVertexAttribPointer(fPosition,2,GLES20.GL_FLOAT,false,8,vertexData.length*4);
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);
+
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,0);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER,0);
     }

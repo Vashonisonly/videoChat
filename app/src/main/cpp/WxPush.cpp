@@ -40,3 +40,34 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved){
     javaVm = nullptr;
 }
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_wxvideotalk1030_RtmpPush_WxPushVideo_pushSPSPPS(JNIEnv *env, jobject thiz,
+                                                                 jbyteArray sps_, jint sps_len,
+                                                                 jbyteArray pps_, jint pps_len) {
+    // TODO: implement pushSPSPPS()
+    jbyte *sps = env->GetByteArrayElements(sps_, NULL);
+    jbyte *pps = env->GetByteArrayElements(pps_, NULL);
+
+    if(rtmpPush != nullptr){
+        rtmpPush->pushSPSPPS(reinterpret_cast<char *>(sps),sps_len, reinterpret_cast<char *>(pps),pps_len);
+    }
+    env->ReleaseByteArrayElements(sps_,sps,0);
+    env->ReleaseByteArrayElements(pps_,pps,0);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_wxvideotalk1030_RtmpPush_WxPushVideo_pushVideoData(JNIEnv *env, jobject thiz,
+                                                                    jbyteArray data_,
+                                                                    jint data_length,
+                                                                    jboolean isKeyFrame) {
+    // TODO: implement pushVideoData()
+    jbyte *data = env->GetByteArrayElements(data_, nullptr);
+
+    if(rtmpPush != nullptr){
+        rtmpPush->pushVideoData(reinterpret_cast<char *>(data),data_length,isKeyFrame);
+    }
+
+    env->ReleaseByteArrayElements(data_,data,0);
+}
